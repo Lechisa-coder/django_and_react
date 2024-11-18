@@ -1,55 +1,49 @@
-import React, { Component, Fragment } from "react";
+import React, { useState } from "react";
 import { Modal, ModalHeader, Button, ModalFooter } from "reactstrap";
-
 import axios from "axios";
-
 import { API_URL } from "../constants";
 
-class ConfirmRemovalModal extends Component {
-  state = {
-    modal: false
+const ConfirmRemovalModal = ({ pk, resetState }) => {
+  const [modal, setModal] = useState(false);
+
+  const toggle = () => {
+    setModal(!modal);
   };
 
-  toggle = () => {
-    this.setState(previous => ({
-      modal: !previous.modal
-    }));
+  const deleteStudent = async (pk) => {
+    try {
+      await axios.delete(`${API_URL}${pk}`);
+      resetState();
+      toggle();
+    } catch (error) {
+      console.error("There was an error deleting the student!", error);
+    }
   };
 
-  deleteStudent = pk => {
-    axios.delete(API_URL + pk).then(() => {
-      this.props.resetState();
-      this.toggle();
-    });
-  };
-
-  render() {
-    return (
-      <Fragment>
-        <Button color="danger" onClick={() => this.toggle()}>
-          Remove
-        </Button>
-        <Modal isOpen={this.state.modal} toggle={this.toggle}>
-          <ModalHeader toggle={this.toggle}>
-            Do you really wanna delete the student?
-          </ModalHeader>
-
-          <ModalFooter>
-            <Button type="button" onClick={() => this.toggle()}>
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              color="primary"
-              onClick={() => this.deleteStudent(this.props.pk)}
-            >
-              Yes
-            </Button>
-          </ModalFooter>
-        </Modal>
-      </Fragment>
-    );
-  }
-}
+  return (
+    <>
+      <Button color="danger" onClick={toggle}>
+        Remove
+      </Button>
+      <Modal isOpen={modal} toggle={toggle}>
+        <ModalHeader toggle={toggle}>
+          Do you really want to delete the student?
+        </ModalHeader>
+        <ModalFooter>
+          <Button type="button" onClick={toggle}>
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            color="primary"
+            onClick={() => deleteStudent(pk)}
+          >
+            Yes
+          </Button>
+        </ModalFooter>
+      </Modal>
+    </>
+  );
+};
 
 export default ConfirmRemovalModal;

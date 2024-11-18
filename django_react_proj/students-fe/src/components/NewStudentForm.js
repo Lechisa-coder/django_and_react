@@ -1,93 +1,93 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Form, FormGroup, Input, Label } from "reactstrap";
-
 import axios from "axios";
-
 import { API_URL } from "../constants";
 
-class NewStudentForm extends React.Component {
-  state = {
+const NewStudentForm = ({ student, resetState, toggle }) => {
+  const [formData, setFormData] = useState({
     pk: 0,
     name: "",
     email: "",
     document: "",
     phone: ""
-  };
+  });
 
-  componentDidMount() {
-    if (this.props.student) {
-      const { pk, name, document, email, phone } = this.props.student;
-      this.setState({ pk, name, document, email, phone });
+  useEffect(() => {
+    if (student) {
+      const { pk, name, email, document, phone } = student;
+      setFormData({ pk, name, email, document, phone });
     }
-  }
+  }, [student]);
 
-  onChange = e => {
-    this.setState({ [e.target.name]: e.target.value });
+  const onChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  createStudent = e => {
+  const createStudent = async (e) => {
     e.preventDefault();
-    axios.post(API_URL, this.state).then(() => {
-      this.props.resetState();
-      this.props.toggle();
-    });
+    try {
+      await axios.post(API_URL, formData);
+      resetState();
+      toggle();
+    } catch (error) {
+      console.error("Error creating student:", error);
+    }
   };
 
-  editStudent = e => {
+  const editStudent = async (e) => {
     e.preventDefault();
-    axios.put(API_URL + this.state.pk, this.state).then(() => {
-      this.props.resetState();
-      this.props.toggle();
-    });
+    try {
+      await axios.put(`${API_URL}${formData.pk}`, formData);
+      resetState();
+      toggle();
+    } catch (error) {
+      console.error("Error editing student:", error);
+    }
   };
 
-  defaultIfEmpty = value => {
-    return value === "" ? "" : value;
-  };
+  const defaultIfEmpty = (value) => (value === "" ? "" : value);
 
-  render() {
-    return (
-      <Form onSubmit={this.props.student ? this.editStudent : this.createStudent}>
-        <FormGroup>
-          <Label for="name">Name:</Label>
-          <Input
-            type="text"
-            name="name"
-            onChange={this.onChange}
-            value={this.defaultIfEmpty(this.state.name)}
-          />
-        </FormGroup>
-        <FormGroup>
-          <Label for="email">Email:</Label>
-          <Input
-            type="email"
-            name="email"
-            onChange={this.onChange}
-            value={this.defaultIfEmpty(this.state.email)}
-          />
-        </FormGroup>
-        <FormGroup>
-          <Label for="document">Document:</Label>
-          <Input
-            type="text"
-            name="document"
-            onChange={this.onChange}
-            value={this.defaultIfEmpty(this.state.document)}
-          />
-        </FormGroup>
-        <FormGroup>
-          <Label for="phone">Phone:</Label>
-          <Input
-            type="text"
-            name="phone"
-            onChange={this.onChange}
-            value={this.defaultIfEmpty(this.state.phone)}
-          />
-        </FormGroup>
-        <Button>Send</Button>
-      </Form>
-    );
-  }
-}
+  return (
+    <Form onSubmit={student ? editStudent : createStudent}>
+      <FormGroup>
+        <Label for="name">Name:</Label>
+        <Input
+          type="text"
+          name="name"
+          onChange={onChange}
+          value={defaultIfEmpty(formData.name)}
+        />
+      </FormGroup>
+      <FormGroup>
+        <Label for="email">Email:</Label>
+        <Input
+          type="email"
+          name="email"
+          onChange={onChange}
+          value={defaultIfEmpty(formData.email)}
+        />
+      </FormGroup>
+      <FormGroup>
+        <Label for="document">Document:</Label>
+        <Input
+          type="text"
+          name="document"
+          onChange={onChange}
+          value={defaultIfEmpty(formData.document)}
+        />
+      </FormGroup>
+      <FormGroup>
+        <Label for="phone">Phone:</Label>
+        <Input
+          type="text"
+          name="phone"
+          onChange={onChange}
+          value={defaultIfEmpty(formData.phone)}
+        />
+      </FormGroup>
+      <Button>Send</Button>
+    </Form>
+  );
+};
 
 export default NewStudentForm;

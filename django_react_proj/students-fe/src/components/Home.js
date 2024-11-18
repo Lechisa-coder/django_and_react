@@ -1,48 +1,45 @@
-import React, { Component } from "react";
+import React, { useEffect, useState } from "react";
 import { Col, Container, Row } from "reactstrap";
 import StudentList from "./StudentList";
 import NewStudentModal from "./NewStudentModal";
 
 import axios from "axios";
-
 import { API_URL } from "../constants";
 
-class Home extends Component {
-  state = {
-    students: []
+const Home = () => {
+  const [students, setStudents] = useState([]);
+
+  const getStudents = async () => {
+    try {
+      const response = await axios.get(API_URL);
+      setStudents(response.data);
+    } catch (error) {
+      console.error("Error fetching students:", error);
+    }
   };
 
-  componentDidMount() {
-    this.resetState();
-  }
-
-  getStudents = () => {
-    axios.get(API_URL).then(res => this.setState({ students: res.data }));
+  const resetState = () => {
+    getStudents();
   };
 
-  resetState = () => {
-    this.getStudents();
-  };
+  useEffect(() => {
+    resetState();
+  }, []);
 
-  render() {
-    return (
-      <Container style={{ marginTop: "20px" }}>
-        <Row>
-          <Col>
-            <StudentList
-              students={this.state.students}
-              resetState={this.resetState}
-            />
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <NewStudentModal create={true} resetState={this.resetState} />
-          </Col>
-        </Row>
-      </Container>
-    );
-  }
-}
+  return (
+    <Container style={{ marginTop: "20px" }}>
+      <Row>
+        <Col>
+          <StudentList students={students} resetState={resetState} />
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          <NewStudentModal create={true} resetState={resetState} />
+        </Col>
+      </Row>
+    </Container>
+  );
+};
 
 export default Home;
